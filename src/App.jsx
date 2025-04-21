@@ -1,50 +1,46 @@
-import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import Home from './Home.jsx'
-import ItemDetailPage from "./ItemDetailPage.jsx";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import InputCreate from "./components/InputCreate";
 
+const TaskList = () => {
+  const [tasks, setTasks] = useState([]);
 
-const App = () => {
-  const [data, setData] = useState(null)
-  const urlApi = 'http://localhost:3000'
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/");
+      const data = await res.json();
+      setTasks(data);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+    }
+  };
 
-const fetchData = async () => {
-  try {
-    const response = await fetch(urlApi)
-    const resData = await response.json()
-    setData(resData)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-useEffect(() => {
-  fetchData()
-}, [])
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   return (
+    <div>
+      <h2>All Tasks</h2>
+      <ul>
+        {tasks.map((task) => (
+          <li key={task._id}>{task.title}</li>
+        ))}
+      </ul>
+      <Link to="/create">Add Task</Link>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
     <Router>
-      <div>
-        <nav>
-          <Link to="/">Inicio</Link>
-     
-        </nav>
-        {data === null 
-        ? (<div>cargando...</div>) 
-        : 
-          <Routes>
-            <Route path="/" element={<Home data={data} />} />
-           
-            {data.map(item => (
-              <Route key={item._id} path={`/${item._id}`} element={<ItemDetailPage item={item}/>} />
-            ))
-            }
-          </Routes>
-        }
-        
-      </div>
+      <Routes>
+        <Route path="/" element={<TaskList />} />
+        <Route path="/create" element={<InputCreate />} />
+      </Routes>
     </Router>
-  )
+  );
 };
 
 export default App;
